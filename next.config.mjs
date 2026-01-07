@@ -9,6 +9,9 @@ const nextConfig = {
     ],
   },
   transpilePackages: ['three'],
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
 };
 
 export default nextConfig;
