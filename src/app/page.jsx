@@ -304,30 +304,37 @@ const CosmicLightRaysBackground = () => {
 const PremiumPhoneShowcase = () => {
   const [currentApp, setCurrentApp] = useState(0);
   
+  // FIX: Use complete static class strings that Tailwind can scan
+  // Instead of dynamic interpolation like `${apps[currentApp].gradient}`
   const apps = [
     { 
       name: "Samsung Remote",
       downloads: "10M+",
       screenshot: "/remote_1.png",
-      gradient: "from-rose-500 to-purple-600"
+      // Complete class strings - Tailwind scanner can detect these
+      glowClass: "bg-gradient-to-br from-rose-500 to-purple-600",
+      screenBgClass: "bg-gradient-to-br from-rose-500 to-purple-600"
     },
     { 
       name: "Coachie",
       downloads: "10K+", 
       screenshot: "/coachie_1.png",
-      gradient: "from-emerald-500 to-cyan-500"
+      glowClass: "bg-gradient-to-br from-emerald-500 to-cyan-500",
+      screenBgClass: "bg-gradient-to-br from-emerald-500 to-cyan-500"
     },
     { 
       name: "Foodzapp",
       downloads: "10K+",
       screenshot: "/foodz_2.png", 
-      gradient: "from-orange-500 to-amber-500"
+      glowClass: "bg-gradient-to-br from-orange-500 to-amber-500",
+      screenBgClass: "bg-gradient-to-br from-orange-500 to-amber-500"
     },
     { 
       name: "Aunest",
       downloads: "Coming Soon",
       screenshot: "/aunest_2.png",
-      gradient: "from-amber-500 to-orange-600"
+      glowClass: "bg-gradient-to-br from-amber-500 to-orange-600",
+      screenBgClass: "bg-gradient-to-br from-amber-500 to-orange-600"
     },
   ];
 
@@ -340,10 +347,11 @@ const PremiumPhoneShowcase = () => {
   }, [apps.length]);
 
   return (
-    <div className="relative flex items-center justify-center">
-      {/* Phone glow - synced with current app */}
+    // FIX: Added flex-shrink-0 to prevent parent grid/flex from stretching
+    <div className="relative flex items-center justify-center flex-shrink-0">
+      {/* Phone glow - using complete className instead of interpolation */}
       <motion.div
-        className={`absolute w-[300px] h-[500px] sm:w-[350px] sm:h-[600px] rounded-[60px] blur-[80px] opacity-40 bg-gradient-to-br ${apps[currentApp].gradient}`}
+        className={`absolute w-[300px] h-[500px] sm:w-[350px] sm:h-[600px] rounded-[60px] blur-[80px] opacity-40 ${apps[currentApp].glowClass}`}
         animate={{ scale: [1, 1.1, 1], opacity: [0.3, 0.5, 0.3] }}
         transition={{ duration: 3, repeat: Infinity }}
       />
@@ -353,14 +361,14 @@ const PremiumPhoneShowcase = () => {
         initial={{ opacity: 0, y: 40 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, delay: 0.3 }}
-        className="relative z-10"
+        className="relative z-10 flex-shrink-0"
       >
         <motion.div
           animate={{ y: [-8, 8, -8] }}
           transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
         >
-          {/* Phone Frame */}
-          <div className="relative w-[260px] h-[530px] sm:w-[280px] sm:h-[570px] md:w-[300px] md:h-[610px]">
+          {/* Phone Frame - FIX: Added flex-shrink-0 to lock dimensions */}
+          <div className="relative w-[260px] h-[530px] sm:w-[280px] sm:h-[570px] md:w-[300px] md:h-[610px] flex-shrink-0">
             {/* Outer frame with metallic gradient */}
             <div className="absolute inset-0 rounded-[3rem] bg-gradient-to-b from-gray-700 via-gray-800 to-gray-900 p-[2px] shadow-[0_50px_100px_-20px_rgba(0,0,0,0.8)]">
               <div className="w-full h-full rounded-[2.9rem] bg-gradient-to-b from-[#1a1a1a] to-[#0a0a0a] p-[3px]">
@@ -383,8 +391,8 @@ const PremiumPhoneShowcase = () => {
                         transition={{ duration: 0.5 }}
                         className="absolute inset-0"
                       >
-                        {/* App Screenshot or Gradient Fallback */}
-                        <div className={`w-full h-full bg-gradient-to-br ${apps[currentApp].gradient}`}>
+                        {/* App Screenshot or Gradient Fallback - using complete className */}
+                        <div className={`w-full h-full ${apps[currentApp].screenBgClass}`}>
                           <img 
                             src={apps[currentApp].screenshot}
                             alt={apps[currentApp].name}
@@ -492,10 +500,10 @@ const PremiumPhoneShowcase = () => {
               className="group relative"
             >
               <motion.div
-                className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                className={`h-2 rounded-full transition-all duration-300 ${
                   i === currentApp 
                     ? "bg-white w-8" 
-                    : "bg-white/30 hover:bg-white/50"
+                    : "bg-white/30 hover:bg-white/50 w-2"
                 }`}
                 layoutId="indicator"
               />
@@ -627,7 +635,7 @@ const Homepage = () => {
       <div className="h-24" />
       
       <motion.div
-        className="h-screen w-screen overflow-hidden relative"
+        className="h-screen w-screen overflow-x-clip relative"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.8 }}
@@ -753,7 +761,8 @@ const Homepage = () => {
             </div>
 
             {/* Right Side - Phone Showcase */}
-            <div className="order-1 lg:order-2 flex items-center justify-center lg:justify-end">
+            {/* FIX: Added flex-shrink-0 to prevent grid stretching */}
+            <div className="order-1 lg:order-2 flex items-center justify-center lg:justify-end flex-shrink-0">
               <PremiumPhoneShowcase />
             </div>
           </div>
