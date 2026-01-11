@@ -1,0 +1,14 @@
+{
+  "name": "Keyun Portfolio",
+  "short_name": "Keyun",
+  "description": "Mobile app developer portfolio showcasing high-performance iOS & Android applications",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "theme_color": "#020208",
+  "background_color": "#020208",
+  "categories": ["portfolio", "business", "productivity"],
+  "lang": "en",
+  "dir": "ltr",
+  "prefer_related_applications": false
+}

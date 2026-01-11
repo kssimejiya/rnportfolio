@@ -2,128 +2,227 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 import { usePathname } from "next/navigation";
-import { useState, useEffect, useRef } from "react";
+import { LayoutRouterContext } from "next/dist/shared/lib/app-router-context.shared-runtime";
+import { useContext, useRef, useEffect, useState, memo } from "react";
 import Navbar from "./navbar";
 
 // =============================================================================
-// ROUTE LABELS
+// FROZEN ROUTER - Critical for exit animations in Next.js App Router
 // =============================================================================
-const getRouteLabel = (path) => {
-  const routes = {
-    "/": "Home",
-    "/about": "About",
-    "/portfolio": "Portfolio",
-    "/contact": "Contact",
+function usePreviousValue(value) {
+  const prevValue = useRef(null);
+  
+  useEffect(() => {
+    prevValue.current = value;
+  }, [value]);
+  
+  return prevValue.current;
+}
+
+function FrozenRouter({ children }) {
+  const context = useContext(LayoutRouterContext);
+  const prevContext = usePreviousValue(context);
+  const frozenContext = prevContext ?? context;
+  
+  return (
+    <LayoutRouterContext.Provider value={frozenContext}>
+      {children}
+    </LayoutRouterContext.Provider>
+  );
+}
+
+// =============================================================================
+// ROUTE CONFIGURATION
+// =============================================================================
+const routeConfig = {
+  "/": { 
+    label: "Home", 
+    color: "#22d3ee",
+  },
+  "/about": { 
+    label: "About", 
+    color: "#a78bfa",
+  },
+  "/portfolio": { 
+    label: "Portfolio", 
+    color: "#60a5fa",
+  },
+  "/contact": { 
+    label: "Contact", 
+    color: "#34d399",
+  },
+};
+
+const getRouteConfig = (path) => {
+  return routeConfig[path] || { 
+    label: path.substring(1) || "Home", 
+    color: "#22d3ee",
   };
-  return routes[path] || path.substring(1) || "Home";
 };
 
 // =============================================================================
-// CURTAIN TRANSITION OVERLAY
+// PAGE TRANSITION - Clean slide-up transition for all devices
 // =============================================================================
-const CurtainOverlay = ({ label }) => {
+const PageTransition = memo(({ label, color }) => {
   return (
     <>
-      {/* Top curtain - slides down to cover, then up to reveal */}
+      {/* Slide up curtain */}
       <motion.div
-        className="w-screen fixed bg-[#020208] rounded-b-[100px] z-40 top-0 left-0"
-        initial={{ height: "0vh" }}
-        animate={{ height: "100vh" }}
-        exit={{ height: "0vh" }}
-        transition={{ duration: 0.4, ease: [0.65, 0, 0.35, 1] }}
+        className="fixed inset-0 z-50 bg-[#0a0a0f]"
+        initial={{ y: "100%" }}
+        animate={{ y: "0%" }}
+        exit={{ y: "-100%" }}
+        transition={{
+          duration: 0.4,
+          ease: [0.645, 0.045, 0.355, 1],
+        }}
       />
 
-      {/* Route label text */}
+      {/* Center label */}
       <motion.div
-        className="fixed inset-0 flex items-center justify-center z-50 pointer-events-none"
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 1.1 }}
-        transition={{ duration: 0.3 }}
+        className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.2 }}
       >
-        <div className="relative">
-          {/* Glow effect - cyan/blue like homepage */}
-          <div className="absolute inset-0 blur-3xl bg-gradient-to-r from-cyan-500 to-blue-500 opacity-40" />
-          <span className="relative text-white text-6xl sm:text-8xl font-bold capitalize">
-            {label}
-          </span>
-        </div>
+        {/* Glow */}
+        <div
+          className="absolute w-48 h-48"
+          style={{
+            background: `radial-gradient(circle, ${color}40 0%, transparent 70%)`,
+            filter: 'blur(40px)',
+          }}
+        />
+        
+        {/* Text */}
+        <motion.h1
+          className="relative text-5xl sm:text-6xl md:text-7xl font-black tracking-tight"
+          style={{ 
+            color: color,
+            textShadow: `0 0 30px ${color}60`,
+          }}
+          initial={{ opacity: 0, scale: 0.8, y: 20 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 1.1, y: -10 }}
+          transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
+        >
+          {label}
+        </motion.h1>
       </motion.div>
-
-      {/* Bottom curtain - follows top curtain */}
-      <motion.div
-        className="w-screen fixed bg-[#020208] rounded-t-[100px] z-30 bottom-0 left-0"
-        initial={{ height: "0vh" }}
-        animate={{ height: "100vh" }}
-        exit={{ height: "0vh" }}
-        transition={{ duration: 0.4, ease: [0.65, 0, 0.35, 1], delay: 0.1 }}
-      />
     </>
   );
-};
+});
+PageTransition.displayName = 'PageTransition';
+
+// =============================================================================
+// PAGE WRAPPER - Handles individual page animations
+// =============================================================================
+const PageWrapper = memo(({ children, routeKey }) => {
+  return (
+    <motion.div
+      key={routeKey}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ 
+        duration: 0.3,
+        ease: "easeInOut",
+      }}
+    >
+      <FrozenRouter>
+        {children}
+      </FrozenRouter>
+    </motion.div>
+  );
+});
+PageWrapper.displayName = 'PageWrapper';
 
 // =============================================================================
 // MAIN TRANSITION PROVIDER
 // =============================================================================
 const TransitionProvider = ({ children }) => {
-  const pathName = usePathname();
-  const [displayChildren, setDisplayChildren] = useState(children);
+  const pathname = usePathname();
   const [isTransitioning, setIsTransitioning] = useState(false);
-  const [transitionLabel, setTransitionLabel] = useState("");
+  const [transitionConfig, setTransitionConfig] = useState({ label: "", color: "#22d3ee" });
+  
+  const previousPathname = useRef(pathname);
+  const isFirstMount = useRef(true);
 
-  const isFirstRender = useRef(true);
-  const previousPath = useRef(pathName);
-
+  // Handle route changes
   useEffect(() => {
-    // Skip transition on first render
-    if (isFirstRender.current) {
-      isFirstRender.current = false;
-      setDisplayChildren(children);
+    if (isFirstMount.current) {
+      isFirstMount.current = false;
       return;
     }
 
-    // Skip if same path (just children update)
-    if (previousPath.current === pathName) {
-      setDisplayChildren(children);
+    if (previousPathname.current === pathname) {
       return;
     }
 
-    // Route changed - start transition
-    previousPath.current = pathName;
-    setTransitionLabel(getRouteLabel(pathName));
+    previousPathname.current = pathname;
+    const config = getRouteConfig(pathname);
+    setTransitionConfig(config);
     setIsTransitioning(true);
 
-    // Swap content while curtain is covering screen
-    const swapTimer = setTimeout(() => {
-      setDisplayChildren(children);
-      window.scrollTo(0, 0);
-    }, 400);
-
-    // Start exit animation after content swap
-    const exitTimer = setTimeout(() => {
+    const timer = setTimeout(() => {
       setIsTransitioning(false);
-    }, 800);
+    }, 600);
 
-    return () => {
-      clearTimeout(swapTimer);
-      clearTimeout(exitTimer);
-    };
-  }, [pathName, children]);
+    return () => clearTimeout(timer);
+  }, [pathname]);
+
+  // Scroll to top on route change
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
 
   return (
-    <div className="w-screen min-h-screen bg-[#020208]">
-      {/* Curtain Overlay */}
-      <AnimatePresence>
-        {isTransitioning && <CurtainOverlay key="curtain" label={transitionLabel} />}
+    <div className="w-screen min-h-screen min-h-dvh bg-[#020208] relative overflow-x-hidden">
+      {/* Background extension for safe areas */}
+      <div 
+        className="fixed bg-[#020208]"
+        style={{ 
+          inset: '-100px',
+          zIndex: -1,
+        }}
+      />
+
+      {/* TRANSITION OVERLAY */}
+      <AnimatePresence mode="wait">
+        {isTransitioning && (
+          <PageTransition
+            key="page-transition"
+            label={transitionConfig.label}
+            color={transitionConfig.color}
+          />
+        )}
       </AnimatePresence>
 
-      {/* Navbar */}
-      <div className="h-24 relative z-50">
+      {/* NAVBAR */}
+      <div 
+        className="relative h-24"
+        style={{ 
+          zIndex: 40,
+          paddingTop: 'env(safe-area-inset-top, 0px)',
+        }}
+      >
         <Navbar />
       </div>
 
-      {/* Page Content - Key forces remount on route change */}
-      <div key={pathName} className="min-h-[calc(100vh-6rem)]">{displayChildren}</div>
+      {/* PAGE CONTENT */}
+      <AnimatePresence mode="wait" initial={false}>
+        <PageWrapper key={pathname} routeKey={pathname}>
+          <main 
+            className="min-h-[calc(100vh-6rem)]"
+            style={{ 
+              paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+            }}
+          >
+            {children}
+          </main>
+        </PageWrapper>
+      </AnimatePresence>
     </div>
   );
 };
