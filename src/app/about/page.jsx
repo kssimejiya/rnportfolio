@@ -61,8 +61,17 @@ const skills = [
   { name: "Framer Motion", color: "from-pink-500 to-rose-500" },
   { name: "Vite", color: "from-yellow-400 to-purple-500" },
   { name: "Firebase", color: "from-amber-400 to-orange-500" },
+  { name: "Firestore", color: "from-cyan-400 to-cyan-600" },
+  { name: "Socket.io", color: "from-indigo-400 to-purple-500" },
+  { name: "Razorpay", color: "from-purple-400 to-purple-600" },
+  { name: "Cashfree", color: "from-yellow-400 to-purple-500" },
+  { name: "Stripe", color: "from-amber-400 to-orange-500" },
+  { name: "Smallcase", color: "from-cyan-400 to-cyan-600" },
+  { name: "OpenAI API", color: "from-amber-400 to-orange-500" },
   { name: "Git", color: "from-orange-400 to-red-500" },
   { name: "Figma", color: "from-pink-400 to-purple-500" },
+  { name: "Realm", color: "from-pink-400 to-purple-500" },
+  { name: "IOS", color: "from-purple-400 to-purple-600" },
 ];
 
 const expertiseItems = [

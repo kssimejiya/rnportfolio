@@ -377,7 +377,7 @@ const OptimizedImage = memo(({ src, alt, fill = true, priority = false, classNam
 OptimizedImage.displayName = 'OptimizedImage';
 
 // =============================================================================
-// ⚡️ OPTIMIZED DEVICE MOCKUP
+// ⚡️ OPTIMIZED DEVICE MOCKUP - Edge-to-edge screen
 // =============================================================================
 
 const DeviceMockup = memo(({ children, className = "", isPrimary = false, isMobile = false }) => (
@@ -404,16 +404,16 @@ const DeviceMockup = memo(({ children, className = "", isPrimary = false, isMobi
         <div className="absolute inset-x-0 top-0 h-[35%]" style={{ background: 'linear-gradient(to bottom, rgba(255,255,255,0.1), transparent)' }} />
       </div>
       
-      {/* Dynamic Island */}
-      <div className="absolute top-[6px] sm:top-2 md:top-2.5 left-1/2 -translate-x-1/2 w-[48px] sm:w-16 md:w-20 lg:w-24 h-[16px] sm:h-5 md:h-6 bg-black rounded-full z-20" style={{ boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.6)' }} />
-      
-      {/* Screen */}
+      {/* Screen - Full edge-to-edge */}
       <div className="relative bg-black rounded-[1.375rem] sm:rounded-[1.75rem] md:rounded-[2.25rem] overflow-hidden" style={{ boxShadow: 'inset 0 0 0 0.5px rgba(255,255,255,0.03)' }}>
-        <div className="h-3 sm:h-6 md:h-8 bg-black" />
-        <div className="relative aspect-[9/19] bg-slate-950">{children}</div>
-        <div className="h-3 sm:h-5 md:h-6 bg-black flex items-center justify-center">
-          <div className="w-14 sm:w-20 md:w-24 h-[3px] sm:h-1 bg-white/15 rounded-full" />
-        </div>
+        {/* Content fills entire screen */}
+        <div className="relative aspect-[9/19.5] bg-slate-950">{children}</div>
+        
+        {/* Dynamic Island - Overlaid on top of content */}
+        <div className="absolute top-[4px] sm:top-[6px] md:top-2 left-1/2 -translate-x-1/2 w-[48px] sm:w-16 md:w-20 lg:w-24 h-[16px] sm:h-5 md:h-6 bg-black rounded-full z-20" style={{ boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.6)' }} />
+        
+        {/* Home Indicator - Overlaid at bottom */}
+        <div className="absolute bottom-1 sm:bottom-1.5 md:bottom-2 left-1/2 -translate-x-1/2 w-14 sm:w-20 md:w-24 h-[3px] sm:h-1 bg-white/20 rounded-full z-20" />
       </div>
     </div>
     
